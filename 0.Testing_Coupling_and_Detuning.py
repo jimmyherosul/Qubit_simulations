@@ -5,31 +5,12 @@ from matplotlib.animation import FuncAnimation
 from matplotlib.widgets import Button
 from qutip import Bloch, Qobj, basis, expect, sigmax, sigmay, sigmaz, ket2dm
 
-# To check the version of qutip
-#import qutip
-#print(qutip.__version__)
-
 
 # ----------------------------- Parameters -----------------------------
-# Delta - Detuning (i.e. half-energy difference between the two basis states) in eV
-# V_mag - Coupling strength between the two basis states |0> and |1> in eV
-# Omega_r - Rabi frequency in rad/s
-# Omega_0 - Unperturbed Detuning frequency in rad/s
-# t_duration - Pulse duration for the gate in s
-# phi - Phase of the coupling term V between the two basis states |0> and |1> in rad
+hbar = 6.582119569e-16
+E_mean = 0
 
-# where Delta, V_mag, t_duration, and phi are tuning parameters for implementing logic gates.
-
-# Throughout this simulation, energy is in eV, time is in s and phase is in rad. Using the reduced Planck constant, the (angular) frequency is therefore in rad/s, unless otherwise specified.
-# Note that for a frequency range of up to 10GHz (6.3x10^10 rad/s), the corresponding energy range is up to approx 41ueV, which is typical for superconducting qubits.
-
-hbar = 6.582119569e-16        # REDUCED Planck constant in eV*s
-E_mean = 0                    # For simplicity, the mean unperturbed energy of the two basis states |0> and |1> is set to zero
-
-# Generating tuning parameters for gate operation
 def tuning_parameters(t_duration, Delta, V_I_mag, V_Q_mag):
-    # All I/Q Coupling and Detuning signals are generated as a square-wave pulse over t_duration
-
     V_mag = np.sqrt(V_I_mag**2 + V_Q_mag**2)
     Omega_0 = 2*Delta/hbar 
     Omega_r = 2*np.sqrt(Delta**2 + V_mag**2)/hbar 
@@ -60,17 +41,6 @@ def unitary_operator(t, hbar, E_mean, V_I_amplitude, V_Q_amplitude, Omega_r, Ome
 
 
 # ----------------------------- Time evolution of Qubit state -----------------------------
-# REMINDER:
-# For X gate: Delta = 0, V_I_mag > 0, V_Q_mag = 0, and t_duration such that (Omega_r/2)*t_duration = pi/2
-# For Y gate: Delta = 0, V_I_mag = 0, V_Q_mag > 0, and t_duration such that (Omega_r/2)*t_duration = pi/2
-# For Z gate: Delta > 0, V_I_mag = 0, V_Q_mag = 0, and t_duration such that (Omega_r/2)*t_duration = pi/2
-# For S gate: Delta < 0, V_I_mag = 0, V_Q_mag = 0, and t_duration such that (Omega_r/2)*t_duration = pi/4
-# For T gate: Delta < 0, V_I_mag = 0, V_Q_mag = 0, and t_duration such that (Omega_r/2)*t_duration = pi/8
-# For H gate: Delta < 0, V_I_mag = Delta or 0, V_Q_mag = 0 or Delta, and t_duration such that (Omega_r/2)*t_duration = pi/8
-# For I gate: Delta, V_I_mag, and V_Q_mag can be set to any values as long as they are NOT ALL ZERO, since t_duration = 0
-
-# Select the single-qubit gates to run in parallel and set the appropriate detuning, I/Q coupling strengths, and initial states
-# Each dictionary represents one independent gate simulation.
 gates_in_parallel = [
     {
         "t_duration": 2.5e-11,
@@ -110,8 +80,6 @@ gates_in_parallel = [
     },
 ]
 
-# Compute the time-evolved qubit states for each gate independently
-# Each gate starts from its own specified initial state, so the gates are simulated in parallel rather than as a serial sequence.
 def gate_operation(gate_settings):
     t_duration = gate_settings["t_duration"]
     Delta = gate_settings["Delta"]
@@ -121,13 +89,9 @@ def gate_operation(gate_settings):
     initial_state_name = gate_settings["initial_state_name"]
     initial_state_label = gate_settings["initial_state_label"]
 
-    # Generate tuning parameters (i.e. time duration, I/Q coupling signals and detuning signal) for the current gate.
-    # The time points for each gate in tuning_parameters function always start from t = 0.
     gate_param = tuning_parameters(t_duration, Delta, V_I_mag, V_Q_mag)
-
     t_current_gate = gate_param["t_points"]
 
-    # Apply the corresponding unitary time-evolution operator to the specified initial state for this gate
     U_gate = unitary_operator(
         t_current_gate,
         hbar,
