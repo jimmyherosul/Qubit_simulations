@@ -5,59 +5,34 @@ from matplotlib.animation import FuncAnimation
 from matplotlib.widgets import Button
 from qutip import Bloch, Qobj, basis, expect, sigmax, sigmay, sigmaz, ket2dm
 
-# To check the version of qutip
-#import qutip
-#print(qutip.__version__)
-
 
 # ----------------------------- Parameters -----------------------------
-# Delta - Detuning (i.e. Unperturbed half-energy difference between the two basis states) in eV
-# V_mag - Coupling strength between the two basis states |0> and |1> in eV
-# Omega_r - Rabi frequency in rad/s
-# Omega_0 - Unperturbed Detuning frequency (i.e. Natural transition/resonant frequency of the two-level system) in rad/s
-# t_duration - Pulse duration for the gate in s
-# phi - Phase of the coupling term V between the two basis states |0> and |1> in rad
+hbar = 6.582119569e-16
+E_mean = 0 
 
-# where Delta, V_mag, t_duration, and phi are tuning parameters for implementing logic gates.
-
-# Throughout this simulation, energy is in eV, time is in s and phase is in rad. Using the reduced Planck constant, the (angular) frequency is therefore in rad/s, unless otherwise specified.
-# Note that for a frequency range of up to 10GHz (6.3x10^10 rad/s), the corresponding energy range is up to approx 41ueV, which is typical for superconducting qubits.
-
-hbar = 6.582119569e-16        # REDUCED Planck constant in eV*s
-E_mean = 0                    # For simplicity, the mean unperturbed energy of the two basis states |0> and |1> is set to zero
-
-# Generating tuning parameters for gate operation
 def tuning_parameters(gate_name, Delta, V_I_mag, V_Q_mag):
-    # All I/Q Coupling and Detuning signals are generated as a square-wave pulse over t_duration
     V_mag = np.sqrt(V_I_mag**2 + V_Q_mag**2)
     Omega_0 = 2*Delta/hbar 
     Omega_r = 2*np.sqrt(Delta**2 + V_mag**2)/hbar 
     
-    # For X gate: Delta = 0, V_I_mag > 0, V_Q_mag = 0, and t_duration such that (Omega_r/2)*t_duration = pi/2
     if gate_name == 'X':
         t_duration = (np.pi/2)*(2/Omega_r)
     
-    # For Y gate: Delta = 0, V_I_mag = 0, V_Q_mag > 0, and t_duration such that (Omega_r/2)*t_duration = pi/2
     elif gate_name == 'Y':  
         t_duration = (np.pi/2)*(2/Omega_r)
 
-    # For Z gate: Delta > 0, V_I_mag = 0, V_Q_mag = 0, and t_duration such that (Omega_r/2)*t_duration = pi/2
     elif gate_name == 'Z':
         t_duration = (np.pi/2)*(2/Omega_r)
 
-    # For S gate: Delta < 0, V_I_mag = 0, V_Q_mag = 0, and t_duration such that (Omega_r/2)*t_duration = pi/4
     elif gate_name == 'S':      
         t_duration = (np.pi/4)*(2/Omega_r)
 
-    # For T gate: Delta < 0, V_I_mag = 0, V_Q_mag = 0, and t_duration such that (Omega_r/2)*t_duration = pi/8
     elif gate_name == 'T':      
         t_duration = (np.pi/8)*(2/Omega_r)
 
-    # For H gate: Delta < 0, V_I_mag = Delta or 0, V_Q_mag = 0 or Delta, and t_duration such that (Omega_r/2)*t_duration = pi/8
     elif gate_name == 'H':      
         t_duration = (np.pi/2)*(2/Omega_r)
 
-    # For I gate: Delta, V_I_mag, and V_Q_mag can be set to any values as long as they are NOT ALL ZERO, since t_duration = 0
     elif gate_name == 'I':   
         t_duration = 0*(2/Omega_r)
 
@@ -87,33 +62,18 @@ def unitary_operator(t, hbar, E_mean, V_I_amplitude, V_Q_amplitude, Omega_r, Ome
 
 
 # ----------------------------- Time evolution of Qubit state -----------------------------
-# REMINDER:
-# For X gate: Delta = 0, V_I_mag > 0, V_Q_mag = 0, and t_duration such that (Omega_r/2)*t_duration = pi/2
-# For Y gate: Delta = 0, V_I_mag = 0, V_Q_mag > 0, and t_duration such that (Omega_r/2)*t_duration = pi/2
-# For Z gate: Delta > 0, V_I_mag = 0, V_Q_mag = 0, and t_duration such that (Omega_r/2)*t_duration = pi/2
-# For S gate: Delta < 0, V_I_mag = 0, V_Q_mag = 0, and t_duration such that (Omega_r/2)*t_duration = pi/4
-# For T gate: Delta < 0, V_I_mag = 0, V_Q_mag = 0, and t_duration such that (Omega_r/2)*t_duration = pi/8
-# For H gate: Delta < 0, V_I_mag = Delta or 0, V_Q_mag = 0 or Delta, and t_duration such that (Omega_r/2)*t_duration = pi/8
-# For I gate: Delta, V_I_mag, and V_Q_mag can be set to any values as long as they are NOT ALL ZERO, since t_duration = 0
-
-# Hadamard similarity transformations: HXH=Z, HYH=-Y, HZH=X
-
-# Select a sequence of single-qubit gates and set the appropriate detuning and I/Q coupling strengths
+# Select the single-qubit gates by uncommenting/commenting
 gate_sequence = [
     #{"gate": "H", "Delta": -10e-6,  "V_I_mag": -10e-6, "V_Q_mag": 10e-9},
-    #{"gate": "H", "Delta": -10e-6,  "V_I_mag": -10e-6, "V_Q_mag": 10e-9},
     {"gate": "X", "Delta": 10e-9, "V_I_mag": 10e-6, "V_Q_mag": 10e-9},
-    #{"gate": "X", "Delta": 10e-9, "V_I_mag": 10e-6, "V_Q_mag": 10e-9},
-    {"gate": "Y", "Delta": 10e-9, "V_I_mag": 10e-9, "V_Q_mag": 10e-6},
+    #{"gate": "Y", "Delta": 10e-9, "V_I_mag": 10e-9, "V_Q_mag": 10e-6},
     #{"gate": "Z", "Delta": 10e-6, "V_I_mag": 10e-9, "V_Q_mag": 10e-9},
     #{"gate": "S", "Delta": -10e-6, "V_I_mag": 10e-9, "V_Q_mag": 10e-9},
     #{"gate": "T", "Delta": -10e-6, "V_I_mag": 10e-9, "V_Q_mag": 10e-9},
     #{"gate": "H", "Delta": -10e-6,  "V_I_mag": -10e-6, "V_Q_mag": 10e-9},
-    {"gate": "H", "Delta": -10e-6,  "V_I_mag": -10e-6, "V_Q_mag": 10e-9},
-    {"gate": "Z", "Delta": 10e-6, "V_I_mag": 10e-9, "V_Q_mag": 10e-9},
 ]
 
-# Select an initial state
+# Select an initial state by uncommenting/commenting
 initial_state = basis(2, 0)                                      # initial state |0>
 #initial_state = basis(2, 1)                                      # initial state |1>
 #initial_state = (basis(2, 0) + (1+0j)*basis(2, 1)).unit()        # initial state |+>
@@ -121,7 +81,6 @@ initial_state = basis(2, 0)                                      # initial state
 #initial_state = (basis(2, 0) + (0+1j)*basis(2, 1)).unit()        # initial state |+i>
 #initial_state = (basis(2, 0) + (0-1j)*basis(2, 1)).unit()        # initial state |-i>
 
-# Compute the time-evolved qubit states for the full gate sequence
 def gate_operation(initial_state, gate_sequence):
     t_accumulated = 0
     input_state = initial_state
@@ -136,18 +95,15 @@ def gate_operation(initial_state, gate_sequence):
 
     gate_info = []
 
-    for gate_settings in gate_sequence:         # For each gate in gate_sequence
+    for gate_settings in gate_sequence:
         gate = gate_settings["gate"]
         Delta = gate_settings["Delta"]
         V_I_mag = gate_settings["V_I_mag"]
         V_Q_mag = gate_settings["V_Q_mag"]
 
-        # Generate tuning parameters (i.e. time duration, I/Q coupling signals and detuning signal) for the current gate.
-        # The time points for each gate in tuning_parameters function always start from t = 0.
         gate_param = tuning_parameters(gate, Delta, V_I_mag, V_Q_mag)
         t_current_gate = gate_param["t_points"]
 
-        # Apply the corresponding unitary time-evolution operator to the state produced by the previous gate
         U_gate = unitary_operator(
             t_current_gate, 
             hbar, 
@@ -161,10 +117,8 @@ def gate_operation(initial_state, gate_sequence):
         for i in range(len(t_current_gate)):
             state_t = Qobj(U_gate[:, :, i]) * input_state
 
-            # Shift the time duration of the current gate by accumulated duration of previous gate
             t_sequence = t_accumulated + t_current_gate[i]
 
-            # Store the resulting qubit state and all tuning parameters from each time point
             qubit_states.append(state_t)
             t_points_sequence.append(t_sequence)
             Delta_signal_sequence.append(gate_param["Delta_signal"][i])
@@ -185,10 +139,8 @@ def gate_operation(initial_state, gate_sequence):
             "t_duration": t_current_gate[-1]
         })
 
-        # Update the input state so that the final state of this gate becomes the initial state for the next gate
         input_state = Qobj(U_gate[:, :, -1]) * input_state
 
-        # Update the accumulated time duration of previous gate so that the next gate starts after this gate
         t_accumulated = t_accumulated + t_current_gate[-1]
 
     return {
