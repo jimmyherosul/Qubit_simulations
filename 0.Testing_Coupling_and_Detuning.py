@@ -107,7 +107,6 @@ def gate_operation(gate_settings):
     for i in range(len(t_current_gate)):
         state_t = Qobj(U_gate[:, :, i]) * initial_state
 
-        # Store the resulting qubit state from each time point
         qubit_states.append(state_t)
 
     gate_info = {
@@ -134,7 +133,6 @@ def gate_operation(gate_settings):
 
 
 def compute_bloch_data(qubit_states):
-    # Obtaining the Bloch-sphere coordinates of the qubit states at each time step
     x = np.array([expect(sigmax(), state).real for state in qubit_states])
     y = np.array([expect(sigmay(), state).real for state in qubit_states])
     z = np.array([expect(sigmaz(), state).real for state in qubit_states])
@@ -154,7 +152,6 @@ def compute_bloch_data(qubit_states):
         "p_total": p_total
     }
 
-# Store the independent simulation result for each gate in the gates_in_parallel list
 parallel_gate_results = []
 
 for gate_number, gate_settings in enumerate(gates_in_parallel, start=1):
@@ -175,7 +172,6 @@ if len(parallel_gate_results) == 0:
     print("No gates selected. Add at least one gate dictionary to gate_sequence.")
 
 else:
-    # Creating combined Bloch-sphere window
     fig_bloch = plt.figure(figsize=(16, 4), num="Bloch Spheres and Energy-Delta Diagram")
     fig_bloch.subplots_adjust(
         left=0.07,
@@ -207,9 +203,9 @@ else:
         bloch_axes.append(ax_bloch)
 
         if subplot_index < len(parallel_gate_results):
-            b_lab = Bloch(axes=ax_bloch)
-            b_lab.font_size = 12
-            bloch_spheres.append(b_lab)
+            b = Bloch(axes=ax_bloch)
+            b.font_size = 12
+            bloch_spheres.append(b)
         else:
             ax_bloch.set_axis_off()
 
@@ -419,19 +415,18 @@ else:
             p1 = controls["p1"]
             p_total = controls["p_total"]
 
-            b_lab = controls["bloch_sphere"]
+            b = controls["bloch_sphere"]
             ax_bloch = controls["bloch_axis"]
             curve_colour = controls["curve_colour"]
 
-            # Updating Bloch sphere in the laboratory reference frame over time
-            b_lab.clear()
-            b_lab.point_color = [curve_colour]
-            b_lab.vector_color = [curve_colour]
+            b.clear()
+            b.point_color = [curve_colour]
+            b.vector_color = [curve_colour]
 
-            b_lab.add_states(qubit_states[frame_i])
-            b_lab.add_points([x[frame_i], y[frame_i], z[frame_i]], 's')
-            b_lab.add_points([x[:frame_i+1], y[:frame_i+1], z[:frame_i+1]], 'l')
-            b_lab.make_sphere()
+            b.add_states(qubit_states[frame_i])
+            b.add_points([x[frame_i], y[frame_i], z[frame_i]], 's')
+            b.add_points([x[:frame_i+1], y[:frame_i+1], z[:frame_i+1]], 'l')
+            b.make_sphere()
 
             t_current = gate_param["t_points"][frame_i]*1e9
             t_points_ns = gate_param["t_points"][:frame_i+1]*1e9
