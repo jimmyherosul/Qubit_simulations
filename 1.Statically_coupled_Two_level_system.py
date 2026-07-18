@@ -168,13 +168,11 @@ for info in sequence_param["gate_info"]:
     print("Omega_r =", (info["Omega_r"]/(2*np.pi))*1e-9, "GHz")
     print("Omega_0 =", (info["Omega_0"]/(2*np.pi))*1e-9, "GHz")
 
-# Obtaining the Bloch-sphere coordinates of the qubit states at each time step
 x = np.array([expect(sigmax(), state).real for state in qubit_states])
 y = np.array([expect(sigmay(), state).real for state in qubit_states])
 z = np.array([expect(sigmaz(), state).real for state in qubit_states])
 r_mag = np.sqrt(x**2 + y**2 + z**2)
 
-# Computing the probabilities of measuring the qubit in states |0> and |1> at each time step
 p0 = np.array([ket2dm(state)[0, 0].real for state in qubit_states])
 p1 = np.array([ket2dm(state)[1, 1].real for state in qubit_states])
 p_total = p0 + p1
@@ -305,12 +303,11 @@ probability_readout = ax_probabilities.text(
 
 
 # ----------------------------- Animating the Bloch sphere and all Time plots -----------------------------
-interval = 10       # Time between frames in milliseconds
+interval = 10      
 
 def update_animation(frame):
     global paused, animation_finished
 
-    # Updating Bloch sphere over time
     t_current = sequence_param["t_points"][frame] * 1e9
     b.clear()
     b.point_color = ['r']
@@ -429,7 +426,7 @@ button = Button(button_ax, "Play")
 
 button.on_clicked(toggle_animation)
 
-# Stop the animation immediately after the first draw event
+
 def pause_animation_on_first_draw(event):
     global paused, animation_finished, first_draw_cid
 
