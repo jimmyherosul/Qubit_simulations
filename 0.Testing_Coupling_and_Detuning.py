@@ -494,8 +494,7 @@ else:
 
     button.on_clicked(toggle_animation)
 
-
-    # Stop the animation immediately after the first draw event
+    
     def pause_animation_on_first_draw(event):
         global paused, animation_finished
 
