@@ -26,8 +26,7 @@ from qutip import Bloch, Qobj, basis, expect, sigmax, sigmay, sigmaz, ket2dm
 hbar = 6.582119569e-16        # REDUCED Planck constant in eV*s
 E_mean = 0                    # For simplicity, the mean unperturbed energy of the two basis states |0> and |1> is set to zero
 
-
-# ----------------------------- Generating tuning parameters for gate operation -----------------------------
+# Generating tuning parameters for gate operation
 def tuning_parameters(t_duration, Delta, V_I_mag, V_Q_mag):
     # All I/Q Coupling and Detuning signals are generated as a square-wave pulse over t_duration
 
