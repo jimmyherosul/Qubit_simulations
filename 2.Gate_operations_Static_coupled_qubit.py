@@ -63,7 +63,7 @@ def unitary_operator(t, hbar, E_mean, V_I_amplitude, V_Q_amplitude, Omega_r, Ome
 
 # ----------------------------- Time evolution of Qubit state -----------------------------
 # Select the single-qubit gates by uncommenting/commenting
-gate_sequence = [
+gate_sequence_in_series = [
     #{"gate": "H", "Delta": -10e-6,  "V_I_mag": -10e-6, "V_Q_mag": 10e-9},
     {"gate": "X", "Delta": 10e-9, "V_I_mag": 10e-6, "V_Q_mag": 10e-9},
     #{"gate": "Y", "Delta": 10e-9, "V_I_mag": 10e-9, "V_Q_mag": 10e-6},
@@ -81,7 +81,7 @@ initial_state = basis(2, 0)                                      # initial state
 #initial_state = (basis(2, 0) + (0+1j)*basis(2, 1)).unit()        # initial state |+i>
 #initial_state = (basis(2, 0) + (0-1j)*basis(2, 1)).unit()        # initial state |-i>
 
-def gate_operation(initial_state, gate_sequence):
+def gate_operation(initial_state, gate_sequence_in_series):
     t_accumulated = 0
     input_state = initial_state
     
@@ -95,7 +95,7 @@ def gate_operation(initial_state, gate_sequence):
 
     gate_info = []
 
-    for gate_settings in gate_sequence:
+    for gate_settings in gate_sequence_in_series:
         gate = gate_settings["gate"]
         Delta = gate_settings["Delta"]
         V_I_mag = gate_settings["V_I_mag"]
@@ -154,7 +154,7 @@ def gate_operation(initial_state, gate_sequence):
         "gate_info": gate_info
     }
 
-sequence_param = gate_operation(initial_state, gate_sequence)
+sequence_param = gate_operation(initial_state, gate_sequence_in_series)
 qubit_states = sequence_param["qubit_states"]
 
 for info in sequence_param["gate_info"]:
